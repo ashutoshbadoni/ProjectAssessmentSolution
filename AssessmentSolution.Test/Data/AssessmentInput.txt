@@ -1,0 +1,14 @@
+﻿^Full Path^|^Length^|^Creation Time Utc^
+^C:\Program Files\Microsoft SQL Server\100\KeyFile\1033\sharedmanagementobjects_keyfile.dll^|^14176^|^2/14/2010 5:20:06 PM^
+^C:\Program Files\Microsoft SQL Server\100\KeyFile\1033\sqlsupport_keyfile.dll^|^14184^|^9/23/2011 4:26:30 AM^
+^C:\Program Files\Microsoft SQL Server\100\KeyFile\1033\sqlsysclrtypes_keyfile.dll^|^14176^|^12/9/2010 8:26:00 PM^
+^C:\Program Files\Microsoft SQL Server\100\SDK\Assemblies\Microsoft.SqlServer.ConnectionInfo.dll^|^153440^|^2/14/2010 5:208 PM^
+^C:\Program Files\Microsoft SQL Server\100\Setup Bootstrap\Release\x64\AddNode.xml^|^6885^|^7/4/2008 6:05:02 AM^
+^C:\Program Files\Microsoft SQL Server\100\Setup Bootstrap\Release\x64\CompleteClusterWizard.xml^|^9156^|^9/14/2011 7:16:24 AM^
+^C:\Program Files\Microsoft SQL Server\100\Setup Bootstrap\Release\x64\ComponentUpdate.xml^|^3060^|^9/14/2011 7:16:24 AM^
+^C:\Program Files\Microsoft SQL Server\100\Setup Bootstrap\Release\x64\EditionUpgradeWizard.xml^|^5276^|^7/4/2008 6:05:02 AM^
+^C:\Program Files\Microsoft SQL Server\100\Setup Bootstrap\Release\x64\FixSqlRegistryKey_ia64.exe.config^|^331^|^8/24/2011 12:32:20 AM^
+^C:\Program Files\Microsoft SQL Server\100\Setup Bootstrap\Release\x64\FixSqlRegistryKey_x64.exe.config^|^331^|^8/24/2011 12:32:20 AM^
+^C:\Program Files\Microsoft SQL Server\100\Setup Bootstrap\Release\x64\FixSqlRegistryKey_x86.exe.config^|^331^|^8/24/2011 12:32:20 AM^
+^C:\Program Files\Microsoft SQL Server\100\Setup Bootstrap\Release\x64\LandingPage.exe.config^|^331^|^8/24/2011 12:32:20 AM^
+
