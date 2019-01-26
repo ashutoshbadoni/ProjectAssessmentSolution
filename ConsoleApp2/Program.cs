@@ -15,11 +15,7 @@ namespace AssessmentSolution
     class Program
     {
         static void Main(string[] args)
-        {
-            AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
-            {
-                Debug.WriteLine(eventArgs.Exception.ToString());
-            };
+        {          
             //check if file exists in the given path
             if (!File.Exists(ConfigurationManager.AppSettings["FilePath"]))
             {
@@ -53,15 +49,17 @@ namespace AssessmentSolution
 
                 Debug.WriteLine(eue.Message);
             }
+            catch (IndexOutOfRangeException eiob)
+            {
+                Console.WriteLine("Encountered error while reading file.");
+                Debug.WriteLine(eiob.Message);
+                ReadLine();
+            }
             catch (Exception ex)
             {
                 WriteLine("An exception occured while reading file. ");
             }
             
-            AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
-            {
-                Debug.WriteLine(eventArgs.Exception.ToString());
-            };
         }
         /// <summary>
         /// Method to facilitate processing user inputs to perticular action based on file type
