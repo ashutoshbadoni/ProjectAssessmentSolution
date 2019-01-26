@@ -86,7 +86,6 @@ namespace AssessmentSolution
             var input = ReadLine();
             while (!isExitPrompted)
             {
-                throw new Exception();
                 //check if input is valid int type
                 if (int.TryParse(input, out int i))
                 {
