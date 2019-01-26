@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static System.Console;
 
 namespace AssessmentSolution
 {
-    public class Data : IEnumerable<Record>
+   
+    public class Data : IEnumerable
     {
         private List<Record> records = new List<Record>();
        
@@ -17,25 +20,44 @@ namespace AssessmentSolution
         {
 
         }
+        /// <summary>
+        /// constructor taking filepath 
+        /// </summary>
+        /// <param name="filePath"></param>
         public Data(string filePath)
-        {
+        {   
             ReadTextFile(filePath);
         }
+        /// <summary>
+        /// Adds new record to Data
+        /// </summary>
+        /// <param name="record"></param>
         public void Add(Record record)
         {
-            records.Add(record);
-            
+            records.Add(record);            
         }
-
-        public IEnumerator<Record> GetEnumerator()
+        /// <summary>
+        /// Returns number of records Data
+        /// </summary>
+        public int Count
         {
-            return records.GetEnumerator();
+            get { return records.Count();}
         }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        /// <summary>
+        /// returns Record as per input index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns>Record</returns>
+        public Record this[int index]
         {
-            return records.GetEnumerator();
+            get { return records[index]; }
+        }      
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {            
+            return new DataEnumerator(this);
         }
+        #region Data Methods
         /// <summary>
         /// This method finds total number of records of a file type(xml,dll,nf,config)
         /// </summary>
@@ -43,10 +65,25 @@ namespace AssessmentSolution
         /// <returns> int count of records</returns>
         public int GetCount(string fileType=null)
         {
+            int index = 0;
             if (string.IsNullOrEmpty(fileType))
-                return this.Count();
+                return this.Count;
             else
-            return this.Count(x => x.FileType == fileType);
+            {
+                try
+                {
+                    Parallel.For(0, this.Count, x =>
+                    {
+                        if (this[x].FileType == fileType) Interlocked.Increment(ref index);
+                    });
+                }
+                catch (AggregateException ae)
+                {
+                    Utility.HandleAggregateExceptions(ae);
+                }
+            }
+
+            return index;
         }
         /// <summary>
         /// This method finds total sum of size for records of a passed file type(xml,dll,nf,config)
@@ -55,13 +92,25 @@ namespace AssessmentSolution
         /// <returns>int sum of all record's size property</returns>
         public int GetSize(string fileType)
         {
-            var filteredRecord = this.Where(x => x?.FileType == fileType);
-            if (filteredRecord != null && filteredRecord.Count() > 0)
-                return this.Where(x => x?.FileType == fileType).Sum(y => y.Size);
-            else
-                return 0;
-
-
+            int totalSize = 0;
+            object locker = new object();
+            try
+            {
+                Parallel.For(0, this.Count, x =>
+                {
+                    if (this[x].FileType == fileType)
+                    {
+                        lock (locker)
+                            Interlocked.Add(ref totalSize, this[x].Size);
+                    }
+                });
+            }
+            catch (AggregateException ae)
+            {
+                Utility.HandleAggregateExceptions(ae);
+            }
+            
+            return totalSize;
         }
         /// <summary>
         /// This method finds average of size number of records of a file type(xml,dll,nf,config)
@@ -70,47 +119,85 @@ namespace AssessmentSolution
         /// <returns>double average of record's size property</returns>
         public double GetAverageSize(string fileType)
         {
-            var filteredRecord = this.Where(x => x?.FileType == fileType);
-            if (filteredRecord != null && filteredRecord.Count() > 0)
-                return Math.Floor( this.Where(x => x?.FileType == fileType).Average(y => y.Size) * 100)/100; 
-            else
-                return 0;
+            double average = 0;
+            try
+            {                
+                int totalSize = GetSize(fileType);
+                int totalFiles = GetCount(fileType);
+                if (totalFiles != 0)
+                    average = (double)totalSize / totalFiles;
+
+                return Math.Floor(average * 100) / 100;
+            }
+            catch (AggregateException ae)
+            {
+                Utility.HandleAggregateExceptions(ae);
+            }
+            return Math.Floor(average * 100) / 100;
         }
+
 
         /// <summary>
         /// Reads all the text from a location(filePath)
         /// if the file is xml, nf, config,dll it adds the record to Data 
         /// </summary>
         /// <param name="filePath"></param>
-        public  void ReadTextFile(string filePath)
+        public void ReadTextFile(string filePath)
         {
+            string[] readText;
+            object locker = new object();
             try
             {
-                //read all lines of the file located at filepath
-                string[] readText = File.ReadAllLines(filePath);
-                foreach (string row in readText)
-                {
-                    //check and add to records collection if the file is xml.nf,config,dll
-                    if (Utility.IsFileInContext(row))
-                    {
-                        string[] record = row.Split(new[] { "^|^" }, StringSplitOptions.None);
-                        string type = Utility.GetFileTYpe(record[0]);
-                        this.Add(new Record(record[0].Trim('^'), int.Parse(record[1]), record[2].Trim('^'), type));
-                    }
-                }
-            }
-            catch (IOException ioe)
+                Parallel.ForEach(readText = File.ReadAllLines(filePath), (x) =>
+                   {
+                       if (Utility.IsFileInContext(x))
+                       {
+                           string[] record = x.Split(new[] { "^|^" }, StringSplitOptions.None);
+                           string type = Utility.GetFileTYpe(record[0]);
+                           lock (locker)
+                               this.Add(new Record(record[0].Trim('^'), int.Parse(record[1]), record[2].Trim('^'), type));
+                       }
+                   });
+            }            
+            catch (AggregateException ae)
             {
-                WriteLine("Incorrect File Path " + ioe.Message);
-                ReadLine();
-            }
-            catch (Exception ex)
+                Utility.HandleAggregateExceptions(ae);
+            }           
+        }
+        #endregion
+
+    }
+    public class DataEnumerator : IEnumerator
+    {
+        internal Data Data;
+        internal int CurrentIndex;
+        internal Record CurrentRecord;
+        public DataEnumerator(Data data)
+        {
+            Data = data;
+            CurrentIndex = -1;
+        }
+        public object Current
+        {
+            get
             {
-                WriteLine("An exception has occoured" + ex.Message);
-                ReadLine();
+                return CurrentRecord;
             }
         }
 
-    }    
-    
+        public bool MoveNext()
+        {
+            if (++CurrentIndex >= Data.Count)
+                return false;
+            else
+                CurrentRecord = Data[CurrentIndex];
+            return true;
+        }
+
+        public void Reset()
+        {
+            CurrentIndex = -1;
+        }
+    }
+
 }

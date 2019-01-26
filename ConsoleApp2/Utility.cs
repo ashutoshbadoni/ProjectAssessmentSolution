@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -50,6 +51,31 @@ namespace AssessmentSolution
                 return true;
             else
                 return false;
+        }
+        /// <summary>
+        /// Handles Aggregate exceptions
+        /// </summary>
+        /// <param name="ae"></param>
+        internal static void HandleAggregateExceptions(AggregateException ae)
+        {
+            ae.Handle((e) => {
+
+                var ignoredExceptions = new List<Exception>();
+                foreach (var ex in ae.Flatten().InnerExceptions)
+                {
+                    if (ex is ArgumentException || ex is NullReferenceException || ex is DivideByZeroException)
+                    {
+                        Console.WriteLine("Encountered error while processing request.");
+                    }
+                    else
+                    {
+                        ignoredExceptions.Add(ex);
+                    }
+                    Debug.WriteLine(ex.Message);
+                }
+                if (ignoredExceptions.Count > 0) throw new AggregateException(ignoredExceptions);
+                return true;
+            });
         }
     }
 }

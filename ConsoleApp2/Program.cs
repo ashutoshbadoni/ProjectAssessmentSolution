@@ -8,15 +8,18 @@ using System.Threading.Tasks;
 using System.Configuration;
 using static System.Console;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace AssessmentSolution
 {
     class Program
     {
-        
         static void Main(string[] args)
         {
-           
+            AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
+            {
+                Debug.WriteLine(eventArgs.Exception.ToString());
+            };
             //check if file exists in the given path
             if (!File.Exists(ConfigurationManager.AppSettings["FilePath"]))
             {
@@ -28,14 +31,37 @@ namespace AssessmentSolution
             {
                 //initialize and load data from file
                 Data data = new Data(ConfigurationManager.AppSettings["FilePath"]);
-                if(data?.Count()>0)
-                PrintFileInformation(data);
+                if (data?.Count > 0)
+                    PrintFileInformation(data);
+            }
+            catch (FileNotFoundException efnf)
+            {
+                WriteLine($"Cannot file find at given file filePath {ConfigurationManager.AppSettings["FilePath"]}");
+                Debug.WriteLine(efnf.FileName + " " + efnf.Message);
+            }
+            catch (PathTooLongException eptl)
+            {
+                WriteLine("Path is too long.");
+                Debug.WriteLine(eptl.Message);
+            }
+            catch (UnauthorizedAccessException eue)
+            {
+                FileAttributes attr = (new FileInfo(ConfigurationManager.AppSettings["FilePath"])).Attributes;
+                Console.Write("Unable to access file");
+                if ((attr & FileAttributes.ReadOnly) > 0)
+                    Console.Write("The file is read-only.");
+
+                Debug.WriteLine(eue.Message);
             }
             catch (Exception ex)
             {
-                WriteLine("An exception occured while reading file. " + ex.Message);
+                WriteLine("An exception occured while reading file. ");
             }
-           
+            
+            AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
+            {
+                Debug.WriteLine(eventArgs.Exception.ToString());
+            };
         }
         /// <summary>
         /// Method to facilitate processing user inputs to perticular action based on file type
@@ -44,69 +70,65 @@ namespace AssessmentSolution
         /// <param name="data"></param>
         private static void PrintFileInformation(Data data)
         {
-            try
+            if (data == null)
             {
-                //if data is null show message and return.
-                if (data == null)
-                {
-                    WriteLine("File does not contain data");
-                    return;
-                }
-                /*Prompt user for selecting a file type
-                1 is for xml, 2 is for dll, 3 is for nf and 4 is for config files*/
-
-                //bool flag to maintain program lifecycle. When set to false the program terminates.
-                bool isExitPrompted = false;
-                WriteLine("Please select" + Environment.NewLine +
-                    "1- for xml File" + Environment.NewLine +
-                    "2- for dll files" + Environment.NewLine +
-                    "3- for nf files" + Environment.NewLine +
-                    "4- for config files" + Environment.NewLine+
-                    "5- to exit" + Environment.NewLine);
-                //continued iteration to get multiple user inputs
-               var input= ReadLine();
-                while (!isExitPrompted)
-                {
-                    //check if input is valid int type
-                    if (int.TryParse(input, out int i))
-                    {
-                        switch (i)
-                        {
-                            case 1:
-                                Utility.ShowFileInfo(Constants.XML, data);
-                                break;
-                            case 2:
-                                Utility.ShowFileInfo(Constants.Dll, data);
-                                break;
-                            case 3:
-                                Utility.ShowFileInfo(Constants.NF, data);
-                                break;
-                            case 4:
-                                Utility.ShowFileInfo(Constants.CONFIG, data);
-                                break;
-                            case 5:
-                                isExitPrompted = true;
-                                break;
-                            default:
-                                WriteLine("invalid input please select values between 1 and 5");
-                                break;
-                        }
-                        if (!isExitPrompted)
-                           input= ReadLine();
-                    }
-                    else
-                    {
-                        //Prompt user to input a valid int number between 1 and 5
-                        WriteLine("invalid input please select values between 1 and 5");
-                       input= ReadLine();
-                    }
-
-                }
+                WriteLine("File does not contain data");
+                return;
             }
-            catch (Exception ex)
+            /*Prompt user for selecting a file type
+            1 is for xml, 2 is for dll, 3 is for nf and 4 is for config files*/
+
+            //bool flag to maintain program lifecycle. When set to false the program terminates.
+            bool isExitPrompted = false;
+            WriteLine("Please select" + Environment.NewLine +
+                "1- for xml File" + Environment.NewLine +
+                "2- for dll files" + Environment.NewLine +
+                "3- for nf files" + Environment.NewLine +
+                "4- for config files" + Environment.NewLine +
+                "5- to exit" + Environment.NewLine);
+            //continued iteration to get multiple user inputs
+            var input = ReadLine();
+            while (!isExitPrompted)
             {
-                WriteLine("An exception has occured " + ex.Message);
+                //check if input is valid int type
+                if (int.TryParse(input, out int i))
+                {
+                    switch (i)
+                    {
+                        case 1:
+                            Utility.ShowFileInfo(Constants.XML, data);
+                            break;
+                        case 2:
+                            Utility.ShowFileInfo(Constants.Dll, data);
+                            break;
+                        case 3:
+                            Utility.ShowFileInfo(Constants.NF, data);
+                            break;
+                        case 4:
+                            Utility.ShowFileInfo(Constants.CONFIG, data);
+                            break;
+                        case 5:
+                            isExitPrompted = true;
+                            break;
+                        default:
+                            WriteLine("invalid input please select values between 1 and 5");
+                            break;
+                    }
+                    if (!isExitPrompted)
+                        input = ReadLine();
+                }
+                else
+                {
+                    //Prompt user to input a valid int number between 1 and 5
+                    WriteLine("invalid input please select values between 1 and 5");
+                    input = ReadLine();
+                }
+
             }
         }
+
     }
+
 }
+
+
