@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AssessmentSolution
+﻿namespace AssessmentSolution
 {
     public class Record
     {
@@ -23,7 +17,7 @@ namespace AssessmentSolution
 
         public override string ToString()
         {
-            return $"Path of File {FullPath} size= {Size} Date= {CreationDate}";
+            return $"Path of File {FullPath} size= {Size} Date= {CreationDate} Type={FileType}";
         }
 
     }
