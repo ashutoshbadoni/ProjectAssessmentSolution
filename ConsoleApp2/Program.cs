@@ -28,11 +28,13 @@ namespace AssessmentSolution
             {
                 WriteLine($"Cannot file find at given file filePath {ConfigurationManager.AppSettings["FilePath"]}");
                 Debug.WriteLine(efnf.FileName + " " + efnf.Message);
+                ReadLine();
             }
             catch (PathTooLongException eptl)
             {
                 WriteLine("Path is too long.");
                 Debug.WriteLine(eptl.Message);
+                ReadLine();
             }
             catch (UnauthorizedAccessException eue)
             {
@@ -42,6 +44,7 @@ namespace AssessmentSolution
                     Console.Write("The file is read-only.");
 
                 Debug.WriteLine(eue.Message);
+                ReadLine();
             }
             catch (IndexOutOfRangeException eiob)
             {
@@ -52,6 +55,7 @@ namespace AssessmentSolution
             catch (Exception ex)
             {
                 WriteLine("An exception occured while reading file. ");
+                ReadLine();
             }
             
         }
@@ -82,6 +86,7 @@ namespace AssessmentSolution
             var input = ReadLine();
             while (!isExitPrompted)
             {
+                throw new Exception();
                 //check if input is valid int type
                 if (int.TryParse(input, out int i))
                 {
