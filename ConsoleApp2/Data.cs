@@ -96,9 +96,8 @@ namespace AssessmentSolution
                 Parallel.For(0, this.Count, x =>
                 {
                     if (this[x].FileType == fileType)
-                    {
-                        lock (locker)
-                            Interlocked.Add(ref totalSize, this[x].Size);
+                    {                        
+                         Interlocked.Add(ref totalSize, this[x].Size);
                     }
                 });
             }
@@ -187,8 +186,10 @@ namespace AssessmentSolution
             if (++CurrentIndex >= Data.Count)
                 return false;
             else
+            {
                 CurrentRecord = Data[CurrentIndex];
-            return true;
+                return true;
+            }
         }
 
         public void Reset()
